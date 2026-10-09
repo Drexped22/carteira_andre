@@ -57,4 +57,3 @@ fun gerarQrCode(
 
     return bitmap
 }
-

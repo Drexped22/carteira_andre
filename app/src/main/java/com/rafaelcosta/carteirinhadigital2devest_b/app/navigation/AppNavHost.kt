@@ -1,5 +1,6 @@
 package com.rafaelcosta.carteirinhadigital2devest_b.app.navigation
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -15,6 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.rafaelcosta.carteirinhadigital2devest_b.app.di.AppContainer
 import com.rafaelcosta.carteirinhadigital2devest_b.app.session.SessionViewModel
+import com.rafaelcosta.carteirinhadigital2devest_b.app.ui.AppShell
 import com.rafaelcosta.carteirinhadigital2devest_b.feature.carteirinha.presetantion.screen.CarteirinhaScreen
 import com.rafaelcosta.carteirinhadigital2devest_b.feature.home_aluno.presentation.screen.HomeScreen
 import com.rafaelcosta.carteirinhadigital2devest_b.feature.login.presentation.screen.LoginScreen
@@ -22,85 +24,174 @@ import com.rafaelcosta.carteirinhadigital2devest_b.feature.unidadecurriculares.p
 import com.rafaelcosta.carteirinhadigital2devest_b.feature.unidadecurriculares.presentation.factory.UnidadeCurricularViewModelFactory
 import com.rafaelcosta.carteirinhadigital2devest_b.feature.unidadecurriculares.presentation.screen.UnidadeCurricularScreen
 
+@SuppressLint("RememberReturnType")
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    sessionViewModel: SessionViewModel = viewModel(),
-    container: AppContainer,
+    darkTheme: Boolean,
+    onDarkThemeChange: (Boolean) -> Unit,
+    container: AppContainer
 ) {
+    val sessionFactory = remember(container.sessionTokenStore) {
+        SessionViewModelFactory(
+            sessionTokenStore = container.sessionTokenStore
+        )
+    }
+
+    val sessionViewModel: SessionViewModel = viewModel(factory = sessionFactory)
     val usuarioLogado by sessionViewModel.usuarioLogado.collectAsStateWithLifecycle()
     val usuario = usuarioLogado
+
+    fun logout() {
+        sessionViewModel.limparSessao()
+        navController.navigate(Routes.Login.route) {
+            popUpTo(Routes.HomeAluno.route) {
+                inclusive = true
+            }
+            launchSingleTop = true
+        }
+    }
 
     NavHost(
         navController = navController,
         startDestination = Routes.Login.route
     ) {
+
         composable(Routes.Login.route) {
+            val loginFactory = remember(
+                container.loginRepository
+            ) {
+                LoginViewModelFactory(
+                    repository = container.loginRepository
+                )
+            }
+
+            val loginViewModel: LoginViewModel = viewModel(factory = loginFactory)
 
             LoginScreen(
-                navController = navController,
+                viewModel = loginViewModel,
                 onLoginSucesso = { usuario ->
-                    container.authTokenStore.setToken(usuario.token)
                     sessionViewModel.setUsuarioLogado(usuario)
-                    navController.navigate(Routes.HomeAluno.route)
+                    navController.navigate(Routes.HomeAluno.route) {
+                        popUpTo(Routes.Login.route) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
                 }
             )
         }
 
-        composable(Routes.Carteirinha.route) {
-            Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-
-                CarteirinhaScreen(
-                    modifier = Modifier.padding(innerPadding)
-                )
+        composable(
+            Routes.HomeAluno.route
+        ) {
+            if (usuario == null) {
+                RedirecionarParaLogin(navController)
+            } else {
+                AppShell(
+                    title = "Início",
+                    usuarioLogado = usuario,
+                    canNavigateBack = false,
+                    darkTheme = darkTheme,
+                    onDarkThemeChange = onDarkThemeChange,
+                    onNavigateBack = { },
+                    onLogout = {
+                        logout()
+                    }
+                ) { innerPadding ->
+                    HomeScreen(
+                        navController = navController,
+                        usuarioLogado = usuario,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                    )
+                }
             }
         }
 
-        composable(Routes.HomeAluno.route) {
-
+        composable(Routes.Carteirinha.route) {
             if (usuario == null) {
-                LaunchedEffect(Unit) {
-                    navController.navigate(Routes.Login.route)
-                }
+                RedirecionarParaLogin(navController)
             } else {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    HomeScreen(
-                        navController = navController,
-                        modifier = Modifier.padding(innerPadding)
+                AppShell(
+                    title = "Carteirinha",
+                    usuarioLogado = usuario,
+                    canNavigateBack = true,
+                    darkTheme = darkTheme,
+                    onDarkThemeChange = onDarkThemeChange,
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    },
+                    onLogout = {
+                        logout()
+                    }
+                ) { innerPadding ->
+                    CarteirinhaScreen(
+                        usuarioLogado = usuario,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
                     )
                 }
             }
         }
 
         composable(Routes.UCAluno.route) {
-
             if (usuario == null) {
-                LaunchedEffect(Unit) {
-                    navController.navigate(Routes.Login.route)
-                }
-
+                RedirecionarParaLogin(navController)
             } else {
-                val unidadeCurricularFactory = remember(
-                    container.unidadeCurricularRepository
-                ) {
+                val ucFactory = remember(container.unidadeCurricularRepository) {
                     UnidadeCurricularViewModelFactory(
                         repository = container.unidadeCurricularRepository
                     )
                 }
+                val ucViewModel: UnidadeCurricularViewModel = viewModel(factory = ucFactory)
 
-                val unidadeCurricularViewModel: UnidadeCurricularViewModel = viewModel(
-                    factory = unidadeCurricularFactory
-                )
-                Scaffold(
-                    modifier = Modifier.fillMaxSize()
+                AppShell(
+                    title = "Unidades Curriculares",
+                    usuarioLogado = usuario,
+                    canNavigateBack = true,
+                    darkTheme = darkTheme,
+                    onDarkThemeChange = onDarkThemeChange,
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    },
+                    onLogout = {
+                        logout()
+                    }
                 ) { innerPadding ->
-
                     UnidadeCurricularScreen(
-                        modifier =Modifier.padding(innerPadding),
-                        viewModel =unidadeCurricularViewModel
+                        viewModel = ucViewModel,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
                     )
                 }
             }
+        }
+    }
+}
+
+fun viewModel(factory: Any): SessionViewModel {
+    TODO("Not yet implemented")
+}
+
+@Composable
+fun SessionViewModelFactory(sessionTokenStore: SessionTokenStore) {
+    TODO("Not yet implemented")
+}
+
+@Composable
+private fun RedirecionarParaLogin(
+    navController:NavHostController
+) {
+    LaunchedEffect(Unit) {
+        navController.navigate( Routes.Login.route) {
+            popUpTo(Routes.HomeAluno.route) {
+                inclusive = true
+            }
+            launchSingleTop = true
         }
     }
 }

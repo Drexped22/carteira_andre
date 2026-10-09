@@ -18,38 +18,47 @@ import com.rafaelcosta.myapplication.QrCode
 
 @Composable
 fun CarteirinhaScreen(
+    usuarioLogado: UsuarioLogado,
     modifier: Modifier = Modifier
 ) {
-    Box {
+
+    Box(
+        modifier = modifier.fillMaxSize()
+    ) {
+
         Image(
             painter = painterResource(id = R.drawable.fundo),
             contentDescription = "Fundo",
             modifier = Modifier
                 .fillMaxSize()
-                .alpha(0.5f),
+                .alpha(0.35f),
             contentScale = ContentScale.Crop
         )
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceAround,
-            modifier = modifier.fillMaxSize()
-
+            verticalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp)
         ) {
+
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Logo Senai",
                 modifier = Modifier
-                    .fillMaxWidth(0.8f)
+                    .fillMaxWidth(0.72f)
             )
+
             PerfilAluno(
-                nome = "Rafael Costa",
-                curso = "Desenvolvimento de Sistemas"
+                nome = usuarioLogado.nome,
+                matricula = usuarioLogado.matricula,
+                curso = usuarioLogado.curso
             )
+
             QrCode(
-                conteudo = "jkhgkgfhgf"
+                conteudo = usuarioLogado.matricula
             )
         }
-
     }
-
 }

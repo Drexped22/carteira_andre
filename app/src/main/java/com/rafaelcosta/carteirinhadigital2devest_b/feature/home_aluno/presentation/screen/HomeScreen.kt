@@ -25,41 +25,67 @@ import com.rafaelcosta.carteirinhadigital2devest_b.feature.home_aluno.presentati
 
 @Composable
 fun HomeScreen(
-    navController: NavController = NavController(
-        LocalContext.current
-    ),
+    navController: NavController = NavController(LocalContext.current),
+    usuarioLogado: UsuarioLogado,
     modifier: Modifier = Modifier
 ) {
+
     Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.Top,
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Aluno",
-            fontSize = 30.sp,
+            text = "Olá, ${usuarioLogado.nome}",
+            style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
 
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = usuarioLogado.curso,
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Text(
+                    text = "Turma: ${usuarioLogado.turma}"
+                )
+                Text(
+                    text = "Matrícula: ${usuarioLogado.matricula}"
+                )
+            }
+        }
+
         Column(
-            modifier = Modifier
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             BotaoNavegacao(
-                "Carteirinha",
-                {
+                text = "Carteirinha",
+                onClick = {
                     navController.navigate(Routes.Carteirinha.route)
                 },
-                modifier = Modifier.fillMaxWidth(.7f)
+                modifier = Modifier.fillMaxWidth()
             )
+
             BotaoNavegacao(
-                "Unidades Curriculares",
-                {
+                text = "Unidades Curriculares",
+                onClick = {
                     navController.navigate(Routes.UCAluno.route)
                 },
-                modifier = Modifier.fillMaxWidth(.7f)
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }
@@ -71,9 +97,16 @@ fun HomeScreen(
 )
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen(
-        modifier = Modifier
-            .padding(20.dp)
-            .fillMaxSize()
-    )
+    CarteirinhaDigital2DEVESTTheme {
+        HomeScreen(
+            usuarioLogado = UsuarioLogado(
+                id = "1",
+                nome = "Rafael Costa",
+                matricula = "2026000001",
+                curso = "Desenvolvimento de Sistemas",
+                turma = "2DEVEST-A",
+                token = "token"
+            )
+        )
+    }
 }

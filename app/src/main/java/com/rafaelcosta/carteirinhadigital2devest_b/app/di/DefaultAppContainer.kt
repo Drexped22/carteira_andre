@@ -1,49 +1,108 @@
 package com.rafaelcosta.carteirinhadigital2devest_b.app.di
 
-import com.rafaelcosta.carteirinhadigital2devest_b.core.auth.SessionTokenStore
-import com.rafaelcosta.carteirinhadigital2devest_b.core.network.NetworkClient
-import com.rafaelcosta.carteirinhadigital2devest_b.feature.login.data.remote.service.AuthApi
-import com.rafaelcosta.carteirinhadigital2devest_b.feature.login.data.repository.ApiLoginRepositoryImpl
-import com.rafaelcosta.carteirinhadigital2devest_b.feature.login.data.repository.FakeAuthRepository
-import com.rafaelcosta.carteirinhadigital2devest_b.feature.login.domain.repository.LoginRepository
-import com.rafaelcosta.carteirinhadigital2devest_b.feature.unidadecurriculares.data.remote.service.UnidadeCurricularApi
-import com.rafaelcosta.carteirinhadigital2devest_b.feature.unidadecurriculares.data.repository.ApiUnidadeCurricularRepositoryImpl
-import com.rafaelcosta.carteirinhadigital2devest_b.feature.unidadecurriculares.domain.repository.UnidadeCurricularRepository
+@Composable
+fun AppNavHost(
+    navController: NavHostController,
+    darkTheme: Boolean,
+    onDarkThemeChange: (Boolean) -> Unit,
+    container: AppContainer
+) {
 
-class DefaultAppContainer : AppContainer {
-    override val sessionTokenStore : SessionTokenStore = SessionTokenStore()
-    private val networkClient =
-        NetworkClient(
-            baseUrl = BASE_URL,
-            sessionTokenStore = sessionTokenStore
-        )
-
-    private val authApi : AuthApi by lazy {
-        networkClient.createPublic(
-            AuthApi::class.java
+    val sessionFactory = remember(container.sessionTokenStore) {
+        SessionViewModelFactory(
+            sessionTokenStore = container.sessionTokenStore
         )
     }
-    private val unidadeCurricularApi : UnidadeCurricularApi by lazy {
-        networkClient.createAuthenticated(
-            UnidadeCurricularApi::class.java
-        )
-    }
-    override val loginRepository : LoginRepository by lazy {
-        if (USE_FAKE_LOGIN_REPOSITORY ) {
-            FakeAuthRepository()
-        } else {
-            ApiLoginRepositoryImpl(
-                api =authApi
-            )
+
+    val sessionViewModel: SessionViewModel = viewModel(
+        factory = sessionFactory
+    )
+
+    fun graphFor(perfil: PerfilAcesso): String {
+        return when (perfil) {
+            PerfilAcesso.ALUNO -> GraphRoutes.ALUNO
+            PerfilAcesso.PROFESSOR -> GraphRoutes.PROFESSOR
         }
     }
-    override val unidadeCurricularRepository : UnidadeCurricularRepository by lazy {
-        ApiUnidadeCurricularRepositoryImpl(
-            api = unidadeCurricularApi
-        )
+
+    fun replaceGraph(
+        currentGraph: String,
+        destinationGraph: String
+    ) {
+
+        navController.navigate(destinationGraph) {
+            popUpTo(currentGraph) {
+                inclusive = true
+            }
+            launchSingleTop = true
+        }
     }
-    companion object {
-        private const val BASE_URL = "http://10.0.2.2:8080/"
-        private const val USE_FAKE_LOGIN_REPOSITORY = false
+
+    NavHost(
+        navController = navController,
+        startDestination = GraphRoutes.AUTH
+    ) {
+        authNavGraph(
+            loginRepository = container.loginRepository,
+            onLoginSucesso = { usuario ->
+                sessionViewModel.setUsuarioLogado(usuario)
+                replaceGraph(
+                    currentGraph = GraphRoutes.AUTH,
+                    destinationGraph = graphFor(usuario.perfil)
+                )
+            }
+        )
+
+        alunoNavGraph(
+            navController = navController,
+            usuarioLogadoFlow = sessionViewModel.usuarioLogado,
+            unidadeCurricularRepository = container.unidadeCurricularRepository,
+            darkTheme = darkTheme,
+            onDarkThemeChange = onDarkThemeChange,
+            onLogout = {
+                sessionViewModel.limparSessao()
+                replaceGraph(
+                    currentGraph = GraphRoutes.ALUNO,
+                    destinationGraph = GraphRoutes.AUTH
+                )
+            },
+            onSessaoAusente = {
+                replaceGraph(
+                    currentGraph = GraphRoutes.ALUNO,
+                    destinationGraph = GraphRoutes.AUTH
+                )
+            },
+            onPerfilInvalido = { perfil ->
+                replaceGraph(
+                    currentGraph = GraphRoutes.ALUNO,
+                    destinationGraph = graphFor(perfil)
+                )
+            }
+        )
+
+        professorNavGraph(
+            usuarioLogadoFlow = sessionViewModel.usuarioLogado,
+            darkTheme = darkTheme,
+            onDarkThemeChange = onDarkThemeChange,
+            onLogout = {
+                sessionViewModel.limparSessao()
+                replaceGraph(
+                    currentGraph = GraphRoutes.PROFESSOR,
+                    destinationGraph = GraphRoutes.AUTH
+                )
+            },
+            onSessaoAusente = {
+                replaceGraph(
+                    currentGraph = GraphRoutes.PROFESSOR,
+                    destinationGraph = GraphRoutes.AUTH
+                )
+            },
+            onPerfilInvalido = { perfil ->
+                replaceGraph(
+                    currentGraph = GraphRoutes.PROFESSOR,
+                    destinationGraph = graphFor(perfil)
+                )
+            }
+        )
     }
 }

@@ -29,8 +29,3 @@ fun App(container: AppContainer) {
         )
     }
 }
-
-@Composable
-fun CarteirinhaDigital2DEVESTTheme(darkTheme: Boolean, content: @Composable () -> Unit) {
-    TODO("Not yet implemented")
-}

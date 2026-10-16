@@ -40,14 +40,21 @@ import com.rafaelcosta.carteirinhadigital2devest_b.feature.login.presentation.Lo
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    onLoginSucesso: (UsuarioLogado)->Unit,
+    onLoginSucesso: (UsuarioLogado) -> Unit,
     viewModel: LoginViewModel
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by
+    viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(uiState.usuarioLogado) {
-        uiState.usuarioLogado?.let{ usuario->
-            viewModel.onEvent(LoginEvent.OnNavegacaoRealizada)
+    LaunchedEffect(
+        uiState.usuarioLogado
+    ) {
+        uiState.usuarioLogado?.let { usuario ->
+
+            viewModel.onEvent(
+                LoginEvent.OnNavegacaoRealizada
+            )
+
             onLoginSucesso(usuario)
         }
     }

@@ -2,14 +2,8 @@ package com.rafaelcosta.carteirinhadigital2devest_b.app.navigation
 
 import kotlinx.serialization.Serializable
 
-sealed class Routes (val route: String){
-
-    data object Login : Routes("login")
-
-    data object Carteirinha : Routes("carteirinha")
-
-    data object HomeAluno : Routes("homeAluno")
-
-    data object UCAluno : Routes("ucAluno")
-
+object GraphRoutes {
+    const val AUTH = "graph/auth"
+    const val ALUNO = "graph/aluno"
+    const val PROFESSOR = "graph/professor"
 }

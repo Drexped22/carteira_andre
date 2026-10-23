@@ -1,4 +1,4 @@
-package com.rafaelcosta.carteirinhadigital2devest_b.feature.login.domain.model;
+package com.rafaelcosta.carteirinhadigital2devest_b.feature.login.domain.model
 
 enum class PerfilAcesso {
     ALUNO,
@@ -7,23 +7,23 @@ enum class PerfilAcesso {
     companion object {
 
         fun fromApi(
-                value: String
+            value: String
         ): PerfilAcesso {
 
             return when (
-                    value.trim().uppercase()
+                value.trim().uppercase()
             ) {
 
                 "ALUNO" ->
-                ALUNO
+                    ALUNO
 
                 "PROFESSOR" ->
-                PROFESSOR
+                    PROFESSOR
 
                 else ->
-                throw IllegalArgumentException(
+                    throw IllegalArgumentException(
                         "Perfil de acesso inválido: $value"
-                )
+                    )
             }
         }
     }

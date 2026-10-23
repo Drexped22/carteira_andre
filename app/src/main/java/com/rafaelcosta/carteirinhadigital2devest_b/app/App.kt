@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.navigation.compose.rememberNavController
 import com.rafaelcosta.carteirinhadigital2devest_b.app.di.AppContainer
 import com.rafaelcosta.carteirinhadigital2devest_b.app.navigation.AppNavHost
+import com.rafaelcosta.carteirinhadigital2devest_b.core.designsystem.theme.theme.CarteirinhaDigital2DEVESTTheme
 
 @Composable
 fun App(container: AppContainer) {

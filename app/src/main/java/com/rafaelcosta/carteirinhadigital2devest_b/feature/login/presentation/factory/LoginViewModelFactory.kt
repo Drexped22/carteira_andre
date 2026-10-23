@@ -1,5 +1,10 @@
 package com.rafaelcosta.carteirinhadigital2devest_b.feature.login.presentation.factory
 
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.rafaelcosta.carteirinhadigital2devest_b.feature.login.domain.repository.LoginRepository
+import com.rafaelcosta.carteirinhadigital2devest_b.feature.login.presentation.LoginViewModel
+
 class LoginViewModelFactory(private val repository: LoginRepository) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {

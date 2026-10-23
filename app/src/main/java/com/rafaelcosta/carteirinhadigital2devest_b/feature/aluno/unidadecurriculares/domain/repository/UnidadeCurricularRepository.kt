@@ -2,8 +2,6 @@ package com.rafaelcosta.carteirinhadigital2devest_b.feature.aluno.unidadecurricu
 
 import com.rafaelcosta.carteirinhadigital2devest_b.feature.aluno.unidadecurriculares.domain.model.UnidadeCurricular
 
-import com.rafaelcosta.carteirinhadigital2devest.feature.aluno.unidadescurriculares.domain.model.UnidadeCurricular
-
 interface UnidadeCurricularRepository {
     suspend fun listar():Result<List<UnidadeCurricular>>
 }
